@@ -1,2 +1,3 @@
-build/*.[od]
+build/*
 test/*.[od]
+test/*.out
