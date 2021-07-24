@@ -172,14 +172,9 @@ start_event_loop(struct FdCollection *fds_coll)
     }
 }
 
-int
-create_and_bind_socket()
+void
+socket_bind_a_name(int socketfd)
 {
-    int socketfd = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (socketfd == -1)
-        die_with_error("failed to create new socket");
-
     // internet address setup
     struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(struct sockaddr_in));
@@ -190,6 +185,15 @@ create_and_bind_socket()
     if (bind(socketfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)) == -1)
         die_with_error("failed to bind the address");
 
+}
+
+int
+socket_create_endpoint()
+{
+    int socketfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (socketfd == -1)
+        die_with_error("failed to create new socket");
     return socketfd;
 }
 
@@ -201,7 +205,8 @@ start_head_server(void)
     struct FdCollection fds_coll;
 
     // create new socket
-    fds_coll.master_socketfd = create_and_bind_socket();
+    fds_coll.master_socketfd = socket_create_endpoint();
+    socket_bind_a_name(fds_coll.master_socketfd);
 
     if (!set_socket_nonblocking(fds_coll.master_socketfd))
         die_with_error("failed to set socket as non-blocking");
