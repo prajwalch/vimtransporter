@@ -45,6 +45,6 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 
 .PHONY: clean
 clean:
-	$(RM) $(BUILD_DIR)/*
+	$(RM) $(BIN_DIR)/* $(BUILD_DIR)/*
 
 
