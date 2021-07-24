@@ -84,7 +84,7 @@ reply_client(int socketfd)
 }
 
 bool
-set_socket_nonblocking(int socketfd)
+socket_make_nonblocking(int socketfd)
 {
     int flags = fcntl(socketfd, F_GETFL, 0);
     if (flags == -1)
@@ -146,7 +146,7 @@ start_event_loop(struct FdCollection *fds_coll)
                 if (fds_coll->client_socketfd == -1)
                     die_with_error("failed to accept a new socket connection");
 
-                set_socket_nonblocking(fds_coll->client_socketfd);
+                socket_make_nonblocking(fds_coll->client_socketfd);
 
                 /*
                  * add READ and WRITE (edge triggered) events to newly accepted client socket
@@ -208,7 +208,7 @@ start_head_server(void)
     fds_coll.master_socketfd = socket_create_endpoint();
     socket_bind_a_name(fds_coll.master_socketfd);
 
-    if (!set_socket_nonblocking(fds_coll.master_socketfd))
+    if (!socket_make_nonblocking(fds_coll.master_socketfd))
         die_with_error("failed to set socket as non-blocking");
 
     if (listen(fds_coll.master_socketfd, DEFAULT_BACKLOG) == -1)
