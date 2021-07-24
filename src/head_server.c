@@ -189,7 +189,7 @@ socket_bind_a_name(int socketfd)
 }
 
 int
-socket_create_endpoint()
+socket_create_endpoint(void)
 {
     int socketfd = socket(AF_INET, SOCK_STREAM, 0);
 

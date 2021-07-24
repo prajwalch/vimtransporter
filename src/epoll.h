@@ -11,7 +11,7 @@
 #include <sys/epoll.h>
 
 int
-epoll_create_instance();
+epoll_create_instance(void);
 
 void
 epoll_ctl_add_fd(int epollfd, int socketfd, struct epoll_event *event);

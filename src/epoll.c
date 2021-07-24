@@ -12,7 +12,7 @@
 extern void die_with_error(const char *msg);
 
 int
-epoll_create_instance()
+epoll_create_instance(void)
 {
     int epollfd = epoll_create1(0);
     if (epollfd == -1)
