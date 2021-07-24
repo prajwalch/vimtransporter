@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <stdlib.h>
+#include <stdlib.h> // ERROR_FAILURE
 #include <string.h>
 
 #include <netinet/in.h>
@@ -21,6 +21,7 @@
 #define MAX_BUFFER_SIZE 20
 
 void die_with_error(const char *msg);
+bool socket_make_nonblocking(int socketfd);
 
 struct FdCollection {
     int master_socketfd;
@@ -81,20 +82,6 @@ reply_client(int socketfd)
     // sene notok as a response msg for now, if it was not a ping msg
     send(socketfd, "NOOK", 5, 0);
     return;
-}
-
-bool
-socket_make_nonblocking(int socketfd)
-{
-    int flags = fcntl(socketfd, F_GETFL, 0);
-    if (flags == -1)
-        return false;
-
-    int status = fcntl(socketfd, F_SETFL, flags | O_NONBLOCK);
-    if (status == -1)
-        return false;
-
-    return true;
 }
 
 // set respective client socket fd who is recently active/ready for un-active/hang up
@@ -170,6 +157,20 @@ start_event_loop(struct FdCollection *fds_coll)
             }
         }
     }
+}
+
+bool
+socket_make_nonblocking(int socketfd)
+{
+    int flags = fcntl(socketfd, F_GETFL, 0);
+    if (flags == -1)
+        return false;
+
+    int status = fcntl(socketfd, F_SETFL, flags | O_NONBLOCK);
+    if (status == -1)
+        return false;
+
+    return true;
 }
 
 void
