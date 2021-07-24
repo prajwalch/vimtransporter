@@ -1,17 +1,16 @@
+#include "epoll_util.h"
+
 #include <errno.h>
-#include <fcntl.h> // for fctl function to make socket non block
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <netinet/in.h> // for constants and structures needed for internet domain addresses
-#include <sys/types.h> // for data types used in system call.
-#include <sys/socket.h> // for defination of structures needed for sockets
-//#include <sys/epoll.h> // for defination of structures needed for sockets
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <unistd.h>
-
-#include "epoll_util.h"
 
 #define DBLOG(m) \
     printf("%s\n", m);
@@ -51,7 +50,7 @@ reply_client(int socketfd)
     char buffer[MAX_BUFFER_SIZE] = {0};
     ssize_t total_byte_read = 0;
     bool has_read_done = false;
-    
+
     while (1) {
         total_byte_read = recv(socketfd, buffer, MAX_BUFFER_SIZE, 0);
 
@@ -61,7 +60,7 @@ reply_client(int socketfd)
                 has_read_done = true;
                 break;
             }
-            
+
             if (errno != EAGAIN) {
                 has_read_done = false;
                 break;
@@ -128,9 +127,9 @@ start_event_loop(struct FdCollection *fds_coll)
         for (int n_fd = 0; n_fd < num_ready_sockfds; n_fd++) {
 
             // some error occured or maybe client just hangup/close the connection
-            if ((pollevents[n_fd].events & (EPOLLERR | EPOLLRDHUP | EPOLLHUP)) || 
+            if ((pollevents[n_fd].events & (EPOLLERR | EPOLLRDHUP | EPOLLHUP)) ||
                 (!(pollevents[n_fd].events & EPOLLIN))) {
-                
+
                 FdColl_mod_client_socketfd(fds_coll, pollevents[n_fd].data.fd);
                 // remove the client from monitor list
                 epoll_ctl_delete_fd(fds_coll->epollfd, fds_coll->client_socketfd, &pollevent);
