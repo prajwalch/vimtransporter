@@ -131,7 +131,7 @@ start_event_loop(struct FdCollection *fds_coll)
                                                    &clientaddr_len);
 
                 if (fds_coll->client_socketfd == -1)
-                    die_with_error("failed to accept a new socket connection");
+                    die_with_error("fail to accept a new socket connection");
 
                 socket_make_nonblocking(fds_coll->client_socketfd);
 
@@ -173,7 +173,7 @@ socket_make_nonblocking(int socketfd)
     return true;
 }
 
-void
+bool
 socket_bind_a_name(int socketfd)
 {
     // internet address setup
@@ -184,8 +184,8 @@ socket_bind_a_name(int socketfd)
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // let system decide the ip address
 
     if (bind(socketfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)) == -1)
-        die_with_error("failed to bind the address");
-
+        return false;
+    return true;
 }
 
 int
@@ -194,7 +194,7 @@ socket_create_endpoint()
     int socketfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (socketfd == -1)
-        die_with_error("failed to create new socket");
+        die_with_error("fail to create new socket");
     return socketfd;
 }
 
@@ -207,13 +207,20 @@ start_head_server(void)
 
     // create new socket
     fds_coll.master_socketfd = socket_create_endpoint();
-    socket_bind_a_name(fds_coll.master_socketfd);
+
+    // make address reusable
+    int option_value = 1;
+    if (setsockopt(fds_coll.master_socketfd, SOL_SOCKET, SO_REUSEADDR, &option_value, sizeof(option_value)) == -1)
+        die_with_error("fail to set socket option");
+    
+    if (!socket_bind_a_name(fds_coll.master_socketfd))
+        die_with_error("fail to bind the socket");
 
     if (!socket_make_nonblocking(fds_coll.master_socketfd))
-        die_with_error("failed to set socket as non-blocking");
+        die_with_error("fail to set socket as non-blocking");
 
     if (listen(fds_coll.master_socketfd, DEFAULT_BACKLOG) == -1)
-        die_with_error("failed to listen the socket connection");
+        die_with_error("fail to listen the socket connection");
 
     start_event_loop(&fds_coll);
     close(fds_coll.master_socketfd);
