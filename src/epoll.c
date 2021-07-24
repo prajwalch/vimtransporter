@@ -4,12 +4,10 @@
  * license     : MIT
  */
 
-#include "epoll_util.h"
+#include "epoll.h"
 
 #include <errno.h>
 #include <stdio.h>
-
-//#define SET_EVENT_DATA_FD(fd) event->data.fd = fd;
 
 extern void die_with_error(const char *msg);
 

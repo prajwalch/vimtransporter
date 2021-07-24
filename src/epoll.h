@@ -4,9 +4,9 @@
  * license     : MIT
  */
 
-#ifndef EPOLL_UTIL_H
+#ifndef TRANSPORTER_EPOLL_H
 
-#define EPOLL_UTIL_H
+#define TRANSPORTER_EPOLL_H
 
 #include <sys/epoll.h>
 
@@ -22,5 +22,5 @@ epoll_ctl_update_fd(int epollfd, int socketfd, struct epoll_event *event);
 void
 epoll_ctl_delete_fd(int epollfd, int socketfd, struct epoll_event *event);
 
-#endif /* EPOLL_UTIL_H */
+#endif /* TRANSPORTER_EPOLL_H */
 
