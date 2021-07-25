@@ -191,6 +191,7 @@ socket_bind_a_name(int socketfd)
     server_addr.sin_family = AF_INET; // it should be same as when socket was created
     server_addr.sin_port = htons(DEFAULT_PORT);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // let system decide the ip address
+    memset(&server_addr.sin_zero, 0, sizeof(server_addr.sin_zero));
 
     if (bind(socketfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)) == -1)
         return false;
