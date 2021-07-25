@@ -183,7 +183,7 @@ socket_make_nonblocking(int socketfd)
 }
 
 bool
-socket_bind_a_name(int socketfd)
+socket_bind(int socketfd)
 {
     // internet address setup
     struct sockaddr_in server_addr;
@@ -223,7 +223,7 @@ start_head_server(void)
     if (setsockopt(fds_coll.master_socketfd, SOL_SOCKET, SO_REUSEADDR, &option_value, sizeof(option_value)) == -1)
         die_with_error("fail to set socket option");
 
-    if (!socket_bind_a_name(fds_coll.master_socketfd))
+    if (!socket_bind(fds_coll.master_socketfd))
         die_with_error("fail to bind the socket");
 
     if (!socket_make_nonblocking(fds_coll.master_socketfd))
