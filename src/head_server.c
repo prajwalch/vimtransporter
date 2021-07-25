@@ -56,21 +56,26 @@ reply_client(int socketfd)
         total_byte_read = recv(socketfd, buffer, MAX_BUFFER_SIZE, 0);
         if (total_byte_read == 0) {
             fprintf(stderr, "client already closed the connection");
-            return;
+            has_read_done = false;
+            break;
         }
 
         if (total_byte_read == -1) {
-            // probably full data is received
-            if (errno == EAGAIN) {
-                has_read_done = true;
+            if (errno & (EAGAIN | EWOULDBLOCK)) {
+                fprintf(stderr, "there is no available data to read");
+                has_read_done = false;
                 break;
             }
 
-            if (errno != EAGAIN) {
+            if (errno == ECONNREFUSED) {
+                fprintf(stderr, "a client '%i' rufused to allow the network connection", socketfd);
                 has_read_done = false;
                 break;
             }
         }
+
+        has_read_done = true;
+        break;
     }
 
     if (!has_read_done)
