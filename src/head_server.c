@@ -54,6 +54,10 @@ reply_client(int socketfd)
 
     while (1) {
         total_byte_read = recv(socketfd, buffer, MAX_BUFFER_SIZE, 0);
+        if (total_byte_read == 0) {
+            fprintf(stderr, "client already closed the connection");
+            return;
+        }
 
         if (total_byte_read == -1) {
             // probably full data is received
@@ -212,7 +216,7 @@ start_head_server(void)
     int option_value = 1;
     if (setsockopt(fds_coll.master_socketfd, SOL_SOCKET, SO_REUSEADDR, &option_value, sizeof(option_value)) == -1)
         die_with_error("fail to set socket option");
-    
+
     if (!socket_bind_a_name(fds_coll.master_socketfd))
         die_with_error("fail to bind the socket");
 
