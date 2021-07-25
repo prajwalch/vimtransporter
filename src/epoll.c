@@ -21,7 +21,7 @@ epoll_create_instance(void)
 }
 
 
-static void
+static inline void
 SET_EVENT_DATA_FD(struct epoll_event *event, int socketfd)
 {
     event->data.fd = socketfd;
