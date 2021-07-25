@@ -219,8 +219,8 @@ start_head_server(void)
     fds_coll.master_socketfd = socket_create_endpoint();
 
     // make address reusable
-    int option_value = 1;
-    if (setsockopt(fds_coll.master_socketfd, SOL_SOCKET, SO_REUSEADDR, &option_value, sizeof(option_value)) == -1)
+    int yes = 1;
+    if (setsockopt(fds_coll.master_socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
         die_with_error("fail to set socket option");
 
     if (!socket_bind(fds_coll.master_socketfd))
