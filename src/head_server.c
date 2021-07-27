@@ -51,21 +51,21 @@ is_ping_msg(char *buffer)
 
 void
 encode_msg(char *reply_buffer,
-              size_t buffer_size,
-              int msg_id, char *msg)
+           size_t buffer_size,
+           int msg_id, char *msg)
 {
     snprintf(reply_buffer, buffer_size, "[%d,\"%s\"]", msg_id, msg);
 }
 
-struct DecodedMsg
-decode_msg(char *encoded_msg_buff)
+bool
+decode_msg(char *encoded_msg_buff, struct DecodedMsg *decoded_msg)
 {
-    struct DecodedMsg decoded_msg;
-    decoded_msg.msg_id = 0;
-    memset(&decoded_msg.msg_data, 0, sizeof decoded_msg.msg_data);
+    decoded_msg->msg_id = 0;
+    memset(&decoded_msg->msg_data, 0, sizeof decoded_msg->msg_data);
 
-    sscanf(encoded_msg_buff, "[%d,\"%[^\"]]", &decoded_msg.msg_id, decoded_msg.msg_data);
-    return decoded_msg;
+    if (sscanf(encoded_msg_buff, "[%d,\"%[^\"]]", &(decoded_msg->msg_id), decoded_msg->msg_data) != 2)
+        return false;
+    return true;
 }
 
 void
@@ -106,7 +106,11 @@ reply_client(int socketfd)
 
     printf("Received data : %s\n", encoded_msg_buff);
 
-    struct DecodedMsg decoded_msg = decode_msg(encoded_msg_buff);
+    struct DecodedMsg decoded_msg;
+    if (!decode_msg(encoded_msg_buff, &decoded_msg)) {
+        fprintf(stderr, "fail to decode message: %s\n", strerror(errno));
+        return;
+    }
     printf("Decoded buffer\nnumber: %d, data: %s\n", decoded_msg.msg_id, decoded_msg.msg_data);
 
     // send PONG as a response, if we got PING msg
