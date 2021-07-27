@@ -64,7 +64,7 @@ decode_msg(char *encoded_msg_buff)
     decoded_msg.msg_id = 0;
     memset(&decoded_msg.msg_data, 0, sizeof decoded_msg.msg_data);
 
-    sscanf(encoded_msg_buff, "[%d,\"%[aA-zZ]\"]", &decoded_msg.msg_id, decoded_msg.msg_data);
+    sscanf(encoded_msg_buff, "[%d,\"%[^\"]]", &decoded_msg.msg_id, decoded_msg.msg_data);
     return decoded_msg;
 }
 
