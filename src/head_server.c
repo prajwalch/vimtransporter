@@ -15,7 +15,7 @@
 #define DBLOG(m) \
     printf("%s\n", m);
 
-#define DEFAULT_PORT 2058
+#define DEFAULT_PORT 8765
 #define DEFAULT_BACKLOG 10
 #define MAX_EVENTS 20
 #define MAX_BUFFER_SIZE 20
@@ -27,6 +27,11 @@ struct FdCollection {
     int master_socketfd;
     int epollfd;
     int client_socketfd;
+};
+
+struct DecodedMsg {
+    int msg_id;
+    char msg_data[MAX_BUFFER_SIZE];
 };
 
 void
@@ -44,16 +49,34 @@ is_ping_msg(char *buffer)
     return false;
 }
 
+void
+encode_msg(char *reply_buffer,
+              size_t buffer_size,
+              int msg_id, char *msg)
+{
+    snprintf(reply_buffer, buffer_size, "[%d,\"%s\"]", msg_id, msg);
+}
+
+struct DecodedMsg
+decode_msg(char *encoded_msg_buff)
+{
+    struct DecodedMsg decoded_msg;
+    decoded_msg.msg_id = 0;
+    memset(&decoded_msg.msg_data, 0, sizeof decoded_msg.msg_data);
+
+    sscanf(encoded_msg_buff, "[%d,\"%[aA-zZ]\"]", &decoded_msg.msg_id, decoded_msg.msg_data);
+    return decoded_msg;
+}
 
 void
 reply_client(int socketfd)
 {
-    char buffer[MAX_BUFFER_SIZE] = {0};
+    char encoded_msg_buff[MAX_BUFFER_SIZE] = {0};
     ssize_t total_byte_read = 0;
     bool has_read_done = false;
 
     while (1) {
-        total_byte_read = recv(socketfd, buffer, MAX_BUFFER_SIZE, 0);
+        total_byte_read = recv(socketfd, encoded_msg_buff, MAX_BUFFER_SIZE, 0);
         if (total_byte_read == 0) {
             fprintf(stderr, "client already closed the connection");
             has_read_done = false;
@@ -81,15 +104,20 @@ reply_client(int socketfd)
     if (!has_read_done)
         return;
 
+    printf("Received data : %s\n", encoded_msg_buff);
+
+    struct DecodedMsg decoded_msg = decode_msg(encoded_msg_buff);
+    printf("Decoded buffer\nnumber: %d, data: %s\n", decoded_msg.msg_id, decoded_msg.msg_data);
+
     // send PONG as a response, if we got PING msg
-    bool has_ping_msg = is_ping_msg(buffer);
+    bool has_ping_msg = is_ping_msg(decoded_msg.msg_data);
     if (has_ping_msg) {
-        send(socketfd, "PONG", 5, 0);
+        char vim_pong[13] = {0};
+        encode_msg(vim_pong, 13, decoded_msg.msg_id, "PONG");
+        send(socketfd, vim_pong, strlen(vim_pong), 0);
         return;
     }
 
-    // sene notok as a response msg for now, if it was not a ping msg
-    send(socketfd, "NOOK", 5, 0);
     return;
 }
 
