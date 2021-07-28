@@ -20,7 +20,7 @@ encode_msg(char *buffer,
 }
 
 bool
-decode_msg(char *encoded_msg, struct DecodedMsg *decoded_msg)
+decode_msg(const char *encoded_msg, struct DecodedMsg *decoded_msg)
 {
     decoded_msg->msg_id = 0;
     memset(&decoded_msg->msg_data, 0, sizeof(decoded_msg->msg_data));
