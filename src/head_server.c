@@ -49,10 +49,10 @@ is_ping_msg(char *msg_data)
 static void
 response_not_ok_msg(int socketfd, int msg_id)
 {
-    const char *res_msg = "invalid message";
-    char res_buf[6 + strlen(res_msg) + 1];
+    //const char *res_msg = "invalid message";
+    char res_buf[24];
     memset(res_buf, 0, sizeof(res_buf));
-    encode_msg(res_buf, sizeof(res_buf), msg_id, res_msg);
+    encode_msg(res_buf, sizeof(res_buf), msg_id,"invalid message");
     send(socketfd, res_buf, strlen(res_buf), 0);
 }
 
