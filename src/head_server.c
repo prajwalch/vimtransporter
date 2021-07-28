@@ -45,15 +45,14 @@ is_ping_msg(char *buffer)
     return false;
 }
 
-void
-reply_client(int socketfd)
+static bool
+recv_client_msg(int socketfd, char *buffer)
 {
-    char encoded_msg_buff[MAX_BUFFER_SIZE] = {0};
-    ssize_t total_byte_read = 0;
     bool has_read_done = false;
+    int total_byte_read = 0;
 
     while (1) {
-        total_byte_read = recv(socketfd, encoded_msg_buff, MAX_BUFFER_SIZE, 0);
+        total_byte_read = recv(socketfd, buffer, MAX_BUFFER_SIZE, 0);
         if (total_byte_read == 0) {
             fprintf(stderr, "client already closed the connection");
             has_read_done = false;
@@ -78,9 +77,15 @@ reply_client(int socketfd)
         break;
     }
 
-    if (!has_read_done)
-        return;
+    return (!has_read_done) ? false : true;
+}
 
+void
+reply_client(int socketfd)
+{
+    char encoded_msg_buff[MAX_BUFFER_SIZE] = {0};
+    if (!recv_client_msg(socketfd, encoded_msg_buff))
+        return; 
     printf("Received data : %s\n", encoded_msg_buff);
 
     struct DecodedMsg decoded_msg;
