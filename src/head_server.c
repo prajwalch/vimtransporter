@@ -20,6 +20,7 @@
 #define DEFAULT_BACKLOG 10
 #define MAX_EVENTS 20
 #define MAX_BUFFER_SIZE 20
+#define DEFAULT_MSG_ID 0
 
 void die_with_error(const char *msg);
 bool socket_make_nonblocking(int socketfd);
@@ -43,6 +44,16 @@ is_ping_msg(char *buffer)
     if (strlen(buffer) == 4 && strncmp(buffer, "PING", 4) == 0)
         return true;
     return false;
+}
+
+static void
+response_not_ok_msg(int socketfd, int msg_id)
+{
+    const char *res_msg = "invalid message";
+    char res_buf[6 + strlen(res_msg) + 1];
+    memset(res_buf, 0, sizeof(res_buf));
+    encode_msg(res_buf, sizeof(res_buf), msg_id, res_msg);
+    send(socketfd, res_buf, strlen(res_buf), 0);
 }
 
 static bool
@@ -90,6 +101,7 @@ reply_client(int socketfd)
 
     struct DecodedMsg decoded_msg;
     if (!decode_msg(encoded_msg_buff, &decoded_msg)) {
+        response_not_ok_msg(socketfd, DEFAULT_MSG_ID);
         return;
     }
     printf("Decoded buffer\nnumber: %d, data: %s\n", decoded_msg.msg_id, decoded_msg.msg_data);
@@ -105,7 +117,7 @@ reply_client(int socketfd)
         send(socketfd, vim_pong, strlen(vim_pong), 0);
         return;
     }
-
+    response_not_ok_msg(socketfd, decoded_msg.msg_id);
     return;
 }
 
