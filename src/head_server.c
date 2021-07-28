@@ -1,4 +1,5 @@
 #include "epoll.h"
+#include "encode_decode.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -29,11 +30,6 @@ struct FdCollection {
     int client_socketfd;
 };
 
-struct DecodedMsg {
-    int msg_id;
-    char msg_data[MAX_BUFFER_SIZE];
-};
-
 void
 die_with_error(const char *msg)
 {
@@ -47,25 +43,6 @@ is_ping_msg(char *buffer)
     if (strlen(buffer) == 4 && strncmp(buffer, "PING", 4) == 0)
         return true;
     return false;
-}
-
-void
-encode_msg(char *reply_buffer,
-           size_t buffer_size,
-           int msg_id, char *msg)
-{
-    snprintf(reply_buffer, buffer_size, "[%d,\"%s\"]", msg_id, msg);
-}
-
-bool
-decode_msg(char *encoded_msg_buff, struct DecodedMsg *decoded_msg)
-{
-    decoded_msg->msg_id = 0;
-    memset(&decoded_msg->msg_data, 0, sizeof decoded_msg->msg_data);
-
-    if (sscanf(encoded_msg_buff, "[%d,\"%[^\"]]", &(decoded_msg->msg_id), decoded_msg->msg_data) != 2)
-        return false;
-    return true;
 }
 
 void
@@ -116,8 +93,11 @@ reply_client(int socketfd)
     // send PONG as a response, if we got PING msg
     bool has_ping_msg = is_ping_msg(decoded_msg.msg_data);
     if (has_ping_msg) {
-        char vim_pong[13] = {0};
-        encode_msg(vim_pong, 13, decoded_msg.msg_id, "PONG");
+        char vim_pong[11] = {0};
+        if (!encode_msg(vim_pong, sizeof(vim_pong), decoded_msg.msg_id, "PONG")) {
+            fprintf(stderr, "fail to encode message: %s\n", strerror(errno));
+            return;
+        }
         send(socketfd, vim_pong, strlen(vim_pong), 0);
         return;
     }
