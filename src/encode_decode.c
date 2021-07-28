@@ -25,8 +25,10 @@ decode_msg(char *encoded_msg_buff, struct DecodedMsg *decoded_msg)
     decoded_msg->msg_id = 0;
     memset(&decoded_msg->msg_data, 0, sizeof(decoded_msg->msg_data));
 
-    if (sscanf(encoded_msg_buff, "[%d,\"%[^\"]]", &(decoded_msg->msg_id), decoded_msg->msg_data) != 2)
+    if (sscanf(encoded_msg_buff, "[%d,\"%[^\"]]", &(decoded_msg->msg_id), decoded_msg->msg_data) != 2) {
+        fprintf(stderr, "fail to decode the message\n");
         return false;
+    }
     return true;
 }
 
