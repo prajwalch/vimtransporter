@@ -94,13 +94,13 @@ recv_client_msg(int socketfd, char *buffer)
 void
 reply_client(int socketfd)
 {
-    char encoded_msg_buff[MAX_BUFFER_SIZE] = {0};
-    if (!recv_client_msg(socketfd, encoded_msg_buff))
-        return; 
-    printf("Received data : %s\n", encoded_msg_buff);
+    char encoded_msg_buf[MAX_BUFFER_SIZE] = {0};
+    if (!recv_client_msg(socketfd, encoded_msg_buf))
+        return;
+    printf("Received data : %s\n", encoded_msg_buf);
 
     struct DecodedMsg decoded_msg;
-    if (!decode_msg(encoded_msg_buff, &decoded_msg)) {
+    if (!decode_msg(encoded_msg_buf, &decoded_msg)) {
         response_not_ok_msg(socketfd, DEFAULT_MSG_ID);
         return;
     }
