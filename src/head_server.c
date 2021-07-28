@@ -18,9 +18,9 @@
 
 #define DEFAULT_PORT 8765
 #define DEFAULT_BACKLOG 10
+#define DEFAULT_MSG_ID 0
 #define MAX_EVENTS 20
 #define MAX_BUFFER_SIZE 20
-#define DEFAULT_MSG_ID 0
 
 void die_with_error(const char *msg);
 bool socket_make_nonblocking(int socketfd);
@@ -39,9 +39,9 @@ die_with_error(const char *msg)
 }
 
 bool
-is_ping_msg(char *buffer)
+is_ping_msg(char *msg_data)
 {
-    if (strlen(buffer) == 4 && strncmp(buffer, "PING", 4) == 0)
+    if (strlen(msg_data) == 4 && strncmp(msg_data, "PING", 4) == 0)
         return true;
     return false;
 }
