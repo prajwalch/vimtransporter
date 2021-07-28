@@ -21,7 +21,8 @@ struct DecodedMsg {
 bool
 encode_msg(char *reply_buffer,
            int buffer_size,
-           int msg_id, char *msg);
+           int msg_id,
+           const char *msg);
 
 bool
 decode_msg(char *encoded_msg_buff, struct DecodedMsg *decoded_msg);

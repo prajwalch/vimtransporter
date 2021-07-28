@@ -12,7 +12,8 @@
 bool
 encode_msg(char *reply_buffer,
            int buffer_size,
-           int msg_id, char *msg)
+           int msg_id,
+           const char *msg)
 {
     int si= snprintf(reply_buffer, buffer_size, "[%d,\"%s\"]", msg_id, msg);
     printf("%i\n", si);
