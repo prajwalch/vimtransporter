@@ -85,7 +85,6 @@ reply_client(int socketfd)
 
     struct DecodedMsg decoded_msg;
     if (!decode_msg(encoded_msg_buff, &decoded_msg)) {
-        fprintf(stderr, "fail to decode message: %s\n", strerror(errno));
         return;
     }
     printf("Decoded buffer\nnumber: %d, data: %s\n", decoded_msg.msg_id, decoded_msg.msg_data);
