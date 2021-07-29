@@ -25,7 +25,7 @@ encode_msg(char *buffer,
            const char *msg_data);
 
 bool
-decode_msg(const char *encoded_msg, struct DecodedMsg *decoded_msg);
+decode_msg(const char *encoded_msg, struct DecodedMsg *decmsg);
 
 #endif /* TRANSPORTER_ENCODE_DECODE_H */
 

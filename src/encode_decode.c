@@ -20,12 +20,12 @@ encode_msg(char *buffer,
 }
 
 bool
-decode_msg(const char *encoded_msg, struct DecodedMsg *decoded_msg)
+decode_msg(const char *encoded_msg, struct DecodedMsg *decmsg)
 {
-    decoded_msg->msg_id = 0;
-    memset(&decoded_msg->msg_data, 0, sizeof(decoded_msg->msg_data));
+    decmsg->msg_id = 0;
+    memset(&decmsg->msg_data, 0, sizeof(decmsg->msg_data));
 
-    if (sscanf(encoded_msg, "[%d,\"%[^\"]]", &(decoded_msg->msg_id), decoded_msg->msg_data) != 2) {
+    if (sscanf(encoded_msg, "[%d,\"%[^\"]]", &(decmsg->msg_id), decmsg->msg_data) != 2) {
         fprintf(stderr, "fail to decode the message\n");
         return false;
     }

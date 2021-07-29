@@ -99,25 +99,25 @@ reply_client(int socketfd)
         return;
     printf("Received data : %s\n", encoded_msg_buf);
 
-    struct DecodedMsg decoded_msg;
-    if (!decode_msg(encoded_msg_buf, &decoded_msg)) {
+    struct DecodedMsg decmsg;
+    if (!decode_msg(encoded_msg_buf, &decmsg)) {
         response_not_ok_msg(socketfd, DEFAULT_MSG_ID);
         return;
     }
-    printf("Decoded buffer\nnumber: %d, data: %s\n", decoded_msg.msg_id, decoded_msg.msg_data);
+    printf("Decoded buffer\nnumber: %d, data: %s\n", decmsg.msg_id, decmsg.msg_data);
 
     // send PONG as a response, if we got PING msg
-    bool has_ping_msg = is_ping_msg(decoded_msg.msg_data);
+    bool has_ping_msg = is_ping_msg(decmsg.msg_data);
     if (has_ping_msg) {
         char vim_pong[11] = {0};
-        if (!encode_msg(vim_pong, sizeof(vim_pong), decoded_msg.msg_id, "PONG")) {
+        if (!encode_msg(vim_pong, sizeof(vim_pong), decmsg.msg_id, "PONG")) {
             fprintf(stderr, "fail to encode message: %s\n", strerror(errno));
             return;
         }
         send(socketfd, vim_pong, strlen(vim_pong), 0);
         return;
     }
-    response_not_ok_msg(socketfd, decoded_msg.msg_id);
+    response_not_ok_msg(socketfd, decmsg.msg_id);
     return;
 }
 
