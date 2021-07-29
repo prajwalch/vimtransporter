@@ -10,17 +10,17 @@
 #include <string.h>
 
 bool
-encode_msg(char *buffer,
-           int buffer_size,
-           int msg_id,
-           const char *msg_data)
+stringify_msg(char *buffer,
+              int buffer_size,
+              int msg_id,
+              const char *msg_data)
 {
     snprintf(buffer, buffer_size, "[%d,\"%s\"]", msg_id, msg_data);
     return true;
 }
 
 bool
-decode_msg(const char *encoded_msg, struct DecodedMsg *decmsg)
+parse_msg(const char *encoded_msg, struct DecodedMsg *decmsg)
 {
     decmsg->msg_id = 0;
     memset(&decmsg->msg_data, 0, sizeof(decmsg->msg_data));

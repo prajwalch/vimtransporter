@@ -19,13 +19,13 @@ struct DecodedMsg {
 };
 
 bool
-encode_msg(char *buffer,
-           int buffer_size,
-           int msg_id,
-           const char *msg_data);
+stringify_msg(char *buffer,
+              int buffer_size,
+              int msg_id,
+              const char *msg_data);
 
 bool
-decode_msg(const char *encoded_msg, struct DecodedMsg *decmsg);
+parse_msg(const char *encoded_msg, struct DecodedMsg *decmsg);
 
 #endif /* TRANSPORTER_ENCODE_DECODE_H */
 

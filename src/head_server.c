@@ -52,7 +52,7 @@ response_not_ok_msg(int socketfd, int msg_id)
     //const char *res_msg = "invalid message";
     char res_buf[24];
     memset(res_buf, 0, sizeof(res_buf));
-    encode_msg(res_buf, sizeof(res_buf), msg_id,"invalid message");
+    stringify_msg(res_buf, sizeof(res_buf), msg_id,"invalid message");
     send(socketfd, res_buf, strlen(res_buf), 0);
 }
 
@@ -100,7 +100,7 @@ reply_client(int socketfd)
     printf("Received data : %s\n", encoded_msg_buf);
 
     struct DecodedMsg decmsg;
-    if (!decode_msg(encoded_msg_buf, &decmsg)) {
+    if (!parse_msg(encoded_msg_buf, &decmsg)) {
         response_not_ok_msg(socketfd, DEFAULT_MSG_ID);
         return;
     }
@@ -110,7 +110,7 @@ reply_client(int socketfd)
     bool has_ping_msg = is_ping_msg(decmsg.msg_data);
     if (has_ping_msg) {
         char vim_pong[11] = {0};
-        if (!encode_msg(vim_pong, sizeof(vim_pong), decmsg.msg_id, "PONG")) {
+        if (!stringify_msg(vim_pong, sizeof(vim_pong), decmsg.msg_id, "PONG")) {
             fprintf(stderr, "fail to encode message: %s\n", strerror(errno));
             return;
         }
