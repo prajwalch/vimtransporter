@@ -13,7 +13,7 @@
 
 #define MSG_DATA_BUFFER 30
 
-struct DecodedMsg {
+struct ParsedMsg {
     int msg_id;
     char msg_data[MSG_DATA_BUFFER];
 };
@@ -25,7 +25,7 @@ stringify_msg(char *buffer,
               const char *msg_data);
 
 bool
-parse_msg(const char *encoded_msg, struct DecodedMsg *decmsg);
+parse_msg(const char *msg_string, struct ParsedMsg *parsed_msg);
 
 #endif /* TRANSPORTER_ENCODE_DECODE_H */
 

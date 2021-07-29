@@ -20,12 +20,12 @@ stringify_msg(char *buffer,
 }
 
 bool
-parse_msg(const char *encoded_msg, struct DecodedMsg *decmsg)
+parse_msg(const char *msg_string, struct ParsedMsg *parsed_msg)
 {
-    decmsg->msg_id = 0;
-    memset(&decmsg->msg_data, 0, sizeof(decmsg->msg_data));
+    parsed_msg->msg_id = 0;
+    memset(&parsed_msg->msg_data, 0, sizeof(parsed_msg->msg_data));
 
-    if (sscanf(encoded_msg, "[%d,\"%[^\"]]", &(decmsg->msg_id), decmsg->msg_data) != 2) {
+    if (sscanf(msg_string, "[%d,\"%[^\"]]", &(parsed_msg->msg_id), parsed_msg->msg_data) != 2) {
         fprintf(stderr, "fail to decode the message\n");
         return false;
     }
