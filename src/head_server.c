@@ -99,7 +99,7 @@ reply_client(int socketfd)
         return;
     printf("Received data : %s\n", msg_string_buf);
 
-    struct DecodedMsg parsed_msg;
+    struct ParsedMsg parsed_msg;
     if (!parse_msg(msg_string_buf, &parsed_msg)) {
         response_not_ok_msg(socketfd, DEFAULT_MSG_ID);
         return;
