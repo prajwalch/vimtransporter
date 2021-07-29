@@ -4,7 +4,7 @@
  * License     : MIT
  */
 
-#include "encode_decode.h"
+#include "msg_util.h"
 
 #include <stdio.h>
 #include <string.h>

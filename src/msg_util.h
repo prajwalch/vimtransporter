@@ -4,9 +4,9 @@
  * License     : MIT
  */
 
-#ifndef TRANSPORTER_ENCODE_DECODE_H
+#ifndef TRANSPORTER_MSG_UTIL_H
 
-#define TRANSPORTER_ENCODE_DECODE_H
+#define TRANSPORTER_MSG_UTIL_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -27,5 +27,5 @@ stringify_msg(char *buffer,
 bool
 parse_msg(const char *msg_string, struct ParsedMsg *parsed_msg);
 
-#endif /* TRANSPORTER_ENCODE_DECODE_H */
+#endif /* TRANSPORTER_MSG_UTIL_H */
 
