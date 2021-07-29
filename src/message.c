@@ -4,7 +4,7 @@
  * License     : MIT
  */
 
-#include "msg_util.h"
+#include "message.h"
 
 #include <stdio.h>
 #include <string.h>

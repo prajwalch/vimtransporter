@@ -1,5 +1,5 @@
 #include "epoll.h"
-#include "msg_util.h"
+#include "message.h"
 
 #include <errno.h>
 #include <fcntl.h>
