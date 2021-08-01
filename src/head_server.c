@@ -1,5 +1,6 @@
 #include "epoll.h"
-#include "message.h"
+#include "receiver.h"
+#include "responder.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -16,19 +17,18 @@
 #define DBLOG(m) \
     printf("%s\n", m);
 
-#define DEFAULT_PORT 8765
+#define DEFAULT_PORT 2058
 #define DEFAULT_BACKLOG 10
 #define DEFAULT_MSG_ID 0
 #define MAX_EVENTS 20
-#define MAX_BUFFER_SIZE 20
 
 void die_with_error(const char *msg);
 bool socket_make_nonblocking(int socketfd);
 
 struct FdCollection {
     int master_socketfd;
-    int epollfd;
     int client_socketfd;
+    int epollfd;
 };
 
 void
@@ -46,78 +46,28 @@ is_ping_msg(char *msg_data)
     return false;
 }
 
-static void
-response_not_ok_msg(int socketfd, int msg_id)
-{
-    //const char *res_msg = "invalid message";
-    char res_buf[24];
-    memset(res_buf, 0, sizeof(res_buf));
-    stringify_msg(res_buf, sizeof(res_buf), msg_id,"invalid message");
-    send(socketfd, res_buf, strlen(res_buf), 0);
-}
-
-static bool
-recv_client_msg(int socketfd, char *buffer)
-{
-    bool has_read_done = false;
-    int total_byte_read = 0;
-
-    while (1) {
-        total_byte_read = recv(socketfd, buffer, MAX_BUFFER_SIZE, 0);
-        if (total_byte_read == 0) {
-            fprintf(stderr, "client already closed the connection");
-            has_read_done = false;
-            break;
-        }
-
-        if (total_byte_read == -1) {
-            if (errno & (EAGAIN | EWOULDBLOCK)) {
-                fprintf(stderr, "there is no available data to read");
-                has_read_done = false;
-                break;
-            }
-
-            if (errno == ECONNREFUSED) {
-                fprintf(stderr, "a client '%i' rufused to allow the network connection", socketfd);
-                has_read_done = false;
-                break;
-            }
-        }
-
-        has_read_done = true;
-        break;
-    }
-
-    return (!has_read_done) ? false : true;
-}
-
 void
 reply_client(int socketfd)
 {
-    char msg_string_buf[MAX_BUFFER_SIZE] = {0};
-    if (!recv_client_msg(socketfd, msg_string_buf))
+    struct DeserializedObj obj;
+    if (!receive_msg(socketfd, &obj))
         return;
-    printf("Received data : %s\n", msg_string_buf);
 
-    struct ParsedMsg parsed_msg;
-    if (!parse_msg(msg_string_buf, &parsed_msg)) {
-        response_not_ok_msg(socketfd, DEFAULT_MSG_ID);
-        return;
-    }
-    printf("Decoded buffer\nnumber: %d, data: %s\n", parsed_msg.msg_id, parsed_msg.msg_data);
+    printf("Received: msg_id: %d, data: %s, svr_cmd: %s\n", obj.msg_id, obj.msg_data, obj.svr_cmd);
 
     // send PONG as a response, if we got PING msg
-    bool has_ping_msg = is_ping_msg(parsed_msg.msg_data);
+    bool has_ping_msg = is_ping_msg(obj.msg_data);
     if (has_ping_msg) {
-        char vim_pong[11] = {0};
-        if (!stringify_msg(vim_pong, sizeof(vim_pong), parsed_msg.msg_id, "PONG")) {
-            fprintf(stderr, "fail to encode message: %s\n", strerror(errno));
-            return;
-        }
-        send(socketfd, vim_pong, strlen(vim_pong), 0);
+        char vim_pong[100] = {0};
+        response_normal_string(socketfd,
+                               vim_pong,
+                               obj.msg_id,
+                               "PING");
         return;
     }
-    response_not_ok_msg(socketfd, parsed_msg.msg_id);
+
+    response_error_string(socketfd);
+
     return;
 }
 
