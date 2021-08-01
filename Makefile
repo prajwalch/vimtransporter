@@ -4,13 +4,23 @@
 
 DEBUG=0
 
-STD=-std=c11
-WARN=-Wall -W -Werror -Wextra
+STD=-std=c99
+WARN=-Wall -Wextra -Wpedantic \
+     -Wformat=2 -Wshadow \
+     -Wwrite-strings -Wstrict-prototypes -Wold-style-definition \
+     -Wredundant-decls -Wnested-externs -Wmissing-include-dirs
+
 OPTIMIZE=-O2
 DEBUG_FLAGS=-g
 
 CC=clang
 CFLAGS=$(STD) -MMD
+
+# GCC warnings that Clang doesn't provide:
+ifeq ($(CC),gcc)
+    WARN += -Wjump-misses-init -Wlogical-op
+endif
+
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += $(DEBUG_FLAGS) $(WARN) -DDEBUG
@@ -33,7 +43,7 @@ DEPS=$(patsubst %.o, %.d, $(OBJS))
 
 TARGET=server
 
-LIBS=
+LIBS=-lm
 
 $(BIN_DIR)/$(TARGET): $(OBJS)
 	$(CC) -o $@ $^ $(LIBS)
