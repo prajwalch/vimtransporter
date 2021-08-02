@@ -20,9 +20,7 @@ enum ChannelCommand {
 };
 
 bool
-serialize_msg(char *buf,
-              enum ChannelCommand cmd,
-              const char *fmt, ...);
+serialize_msg(char *buf, enum ChannelCommand cmd, const char *fmt, ...);
 
 #endif /* TRANSPORTER_SERIALIZER_H */
 

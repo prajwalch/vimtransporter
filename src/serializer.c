@@ -23,9 +23,7 @@ msg_id_len(int msg_id)
 }
 
 bool
-serialize_msg(char *buf,
-              enum ChannelCommand cmd,
-              const char *fmt,...)
+serialize_msg(char *buf, enum ChannelCommand cmd, const char *fmt,...)
 {
     va_list ap;
     va_start(ap, fmt);
