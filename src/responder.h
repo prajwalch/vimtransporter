@@ -8,41 +8,29 @@
 
 #define RESPONDER_H
 
+void
+send_error_WO_SER(int socketfd);
 
 void
-response_normal_string(int socketfd,
-                       char *buf,
-                       int msg_id,
-                       const char *msg_data);
-
-void
-response_redraw_cmd(int socketfd,
-                    char *buf,
-                    const char *forced);
-
-void
-response_ex_cmd(int socketfd,
-                char *buf,
-                const char *cmd);
-
-void
-response_normal_cmd(int socketfd,
-                    char *buf,
-                    const char *norm_mode_cmd);
-
-void
-response_expr_cmd(int socketfd,
-                  char *buf,
-                  const char *expr);
-
-void
-response_call_cmd(int socketfd,
-                  char *buf,
-                  const char *func_name,
-                  const char *arg_list);
+response_normal_string(int socketfd, char *buf, int msg_id, const char *msg_data);
 
 void
 response_error_string(int socketfd);
+
+void
+response_redraw_cmd(int socketfd, char *buf, const char *forced);
+
+void
+response_ex_cmd(int socketfd, char *buf, const char *cmd);
+
+void
+response_normal_cmd(int socketfd, char *buf, const char *norm_mode_cmd);
+
+void
+response_expr_cmd(int socketfd, char *buf, const char *expr);
+
+void
+response_call_cmd(int socketfd, char *buf, const char *func_name, const char *arg_list);
 
 #endif /* RESPONDER_H */
 
