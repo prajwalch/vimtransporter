@@ -20,10 +20,6 @@ is_cmd_data(const char *msg_data)
 bool
 deserialize_msg(const char *raw_msg_str, struct DeserializedObj *obj)
 {
-    obj->msg_id = 0;
-    memset(obj->msg_data, 0, sizeof(obj->msg_data));
-    memset(obj->svr_cmd, 0, sizeof(obj->svr_cmd));
-
     if (sscanf(raw_msg_str, "[%d,\"%[^\"]\"]", &(obj->msg_id), obj->msg_data) != 2) {
         fprintf(stderr, "message deserialization fail\n");
         return false;
