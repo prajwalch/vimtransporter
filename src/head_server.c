@@ -179,9 +179,9 @@ start_head_server(void)
     // different file descriptors collection
     // for easy access on later
     struct FdCollection fds_coll = {
-        .master_socketfd = 0,
-        .client_socketfd = 0,
-        .epollfd = 0
+        .master_socketfd = -1,
+        .client_socketfd = -1,
+        .epollfd = -1
     };
 
     // create new socket
