@@ -61,8 +61,7 @@ reply_client(int socketfd)
     printf("Received: msg_id: %d, data: %s, svr_cmd: %s\n", obj.msg_id, obj.msg_data, obj.svr_cmd);
 
     // send PONG as a response, if we got PING msg
-    bool has_ping_msg = is_ping_msg(obj.msg_data);
-    if (has_ping_msg) {
+    if (is_ping_msg(obj.msg_data)) {
         char vim_pong[100] = {0};
         response_normal_string(socketfd, vim_pong, obj.msg_id, "PING");
         return;
