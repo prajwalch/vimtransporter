@@ -49,7 +49,12 @@ is_ping_msg(char *msg_data)
 void
 reply_client(int socketfd)
 {
-    struct DeserializedObj obj;
+    struct DeserializedObj obj = {
+        .msg_id = 0,
+        .msg_data = {0},
+        .svr_cmd = {0}
+    };
+
     if (!receive_msg(socketfd, &obj))
         return;
 
@@ -59,15 +64,10 @@ reply_client(int socketfd)
     bool has_ping_msg = is_ping_msg(obj.msg_data);
     if (has_ping_msg) {
         char vim_pong[100] = {0};
-        response_normal_string(socketfd,
-                               vim_pong,
-                               obj.msg_id,
-                               "PING");
+        response_normal_string(socketfd, vim_pong, obj.msg_id, "PING");
         return;
     }
-
     response_error_string(socketfd);
-
     return;
 }
 
@@ -81,13 +81,9 @@ FdColl_mod_client_socketfd(struct FdCollection *fds_coll, int new_socketfd)
 void
 start_event_loop(struct FdCollection *fds_coll)
 {
-    struct sockaddr_in client_addr;
-    memset(&client_addr, 0, sizeof(struct sockaddr_in));
-
-    fds_coll->epollfd = epoll_create_instance();
-
     struct epoll_event pollevent, pollevents[MAX_EVENTS];
-    // add master socket fd for monitoring
+    fds_coll->epollfd = epoll_create_instance();
+    // add master socket fd for monitoring new connection
     pollevent.events = EPOLLIN|EPOLLET;
     epoll_ctl_add_fd(fds_coll->epollfd, fds_coll->master_socketfd, &pollevent);
 
@@ -103,19 +99,14 @@ start_event_loop(struct FdCollection *fds_coll)
             // some error occured or maybe client just hangup/close the connection
             if ((pollevents[n_fd].events & (EPOLLERR | EPOLLRDHUP | EPOLLHUP)) ||
                 (!(pollevents[n_fd].events & EPOLLIN))) {
-
                 FdColl_mod_client_socketfd(fds_coll, pollevents[n_fd].data.fd);
                 // remove the client from monitor list
                 epoll_ctl_delete_fd(fds_coll->epollfd, fds_coll->client_socketfd, &pollevent);
                 printf("Event: client '%i' hangup or some error occured\n", fds_coll->client_socketfd);
                 continue;
-
             } else if (pollevents[n_fd].data.fd == fds_coll->master_socketfd) { // new client connection, just accept it
                 DBLOG("Event: new client connection");
-                socklen_t clientaddr_len = sizeof(struct sockaddr_in);
-                fds_coll->client_socketfd = accept(fds_coll->master_socketfd,
-                                                   (struct sockaddr *)&client_addr,
-                                                   &clientaddr_len);
+                fds_coll->client_socketfd = accept(fds_coll->master_socketfd, NULL, NULL);
 
                 if (fds_coll->client_socketfd == -1)
                     die_with_error("fail to accept a new socket connection");
@@ -133,10 +124,7 @@ start_event_loop(struct FdCollection *fds_coll)
                  *
                  * */
                 pollevent.events = EPOLLIN|EPOLLRDHUP|EPOLLET;
-
-                epoll_ctl_add_fd(fds_coll->epollfd,
-                                 fds_coll->client_socketfd,
-                                 &pollevent);
+                epoll_ctl_add_fd(fds_coll->epollfd, fds_coll->client_socketfd, &pollevent);
             } else if (pollevents[n_fd].events & EPOLLIN) { // got a new read event, just read the data and response back to client
                 FdColl_mod_client_socketfd(fds_coll, pollevents[n_fd].data.fd);
                 printf("Event: client '%i' send some data\n", fds_coll->client_socketfd);
@@ -164,12 +152,12 @@ bool
 socket_bind(int socketfd)
 {
     // internet address setup
-    struct sockaddr_in server_addr;
-    memset(&server_addr, 0, sizeof(struct sockaddr_in));
-    server_addr.sin_family = AF_INET; // it should be same as when socket was created
-    server_addr.sin_port = htons(DEFAULT_PORT);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY); // let system decide the ip address
-    memset(&server_addr.sin_zero, 0, sizeof(server_addr.sin_zero));
+    struct sockaddr_in server_addr = {
+        .sin_family = AF_INET,
+        .sin_port = htons(DEFAULT_PORT),
+        .sin_addr.s_addr = htonl(INADDR_ANY),
+        .sin_zero = {0}
+    };
 
     if (bind(socketfd, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)) == -1)
         return false;
@@ -191,14 +179,13 @@ start_head_server(void)
 {
     // different file descriptors collection
     // for easy access on later
-    struct FdCollection fds_coll;
+    struct FdCollection fds_coll = {0,0,0};
 
     // create new socket
     fds_coll.master_socketfd = socket_create_endpoint();
 
     // make address reusable
-    int yes = 1;
-    if (setsockopt(fds_coll.master_socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)
+    if (setsockopt(fds_coll.master_socketfd, SOL_SOCKET, SO_REUSEADDR, &(int) {1}, sizeof(int)) == -1)
         die_with_error("fail to set socket option");
 
     if (!socket_bind(fds_coll.master_socketfd))
