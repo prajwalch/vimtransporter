@@ -67,7 +67,7 @@ response_normal_cmd(int socketfd, char *buf, const char *norm_mode_cmd)
 }
 
 void
-response_expr_cmd(int socketfd,.char *buf, const char *expr)
+response_expr_cmd(int socketfd, char *buf, const char *expr)
 {
     if (!serialize_msg(buf, CHCMD_EXPR, "[\"expr\",\"%s\"]", expr)) {
         send_error_WO_SER(socketfd);
