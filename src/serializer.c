@@ -13,6 +13,8 @@
 #include <string.h>
 
 #define NULL_BYTE 1
+#define STR_MODIFIER_LEN 2 // %s = 2 characters
+#define INT_MODIFIER_LEN 2 // %s = 2 characters
 
 static int
 msg_id_len(int msg_id)
@@ -38,13 +40,13 @@ serialize_msg(char *buf, enum ChannelCommand cmd, const char *fmt,...)
         case (CHCMD_NORMAL):
         case (CHCMD_EXPR):
             msg_data = va_arg(ap, const char *);
-            msg_size = (strlen(fmt) - 2) + strlen(msg_data);
+            msg_size = (strlen(fmt) - STR_MODIFIER_LEN) + strlen(msg_data);
             num_chars_printed = snprintf(buf, msg_size + NULL_BYTE, fmt, msg_data);
             break;
         case (CHCMD_CALL): {
             msg_data = va_arg(ap, const char *); // func name
             const char *func_args = va_arg(ap, const char *);
-            msg_size = (strlen(fmt) - 4) + strlen(msg_data) + strlen(func_args);
+            msg_size = (strlen(fmt) - (STR_MODIFIER_LEN + STR_MODIFIER_LEN)) + strlen(msg_data) + strlen(func_args);
             num_chars_printed = snprintf(buf, msg_size + NULL_BYTE, fmt, msg_data, func_args);
             break;
         }
@@ -52,7 +54,7 @@ serialize_msg(char *buf, enum ChannelCommand cmd, const char *fmt,...)
         default: {
             int msg_id = va_arg(ap, int);
             msg_data = va_arg(ap, const char *);
-            msg_size = (strlen(fmt) - 4) + msg_id_len(msg_id) + strlen(msg_data);
+            msg_size = (strlen(fmt) - (INT_MODIFIER_LEN + STR_MODIFIER_LEN)) + msg_id_len(msg_id) + strlen(msg_data);
             num_chars_printed = snprintf(buf, msg_size + NULL_BYTE, fmt, msg_id, msg_data);
             break;
         }
