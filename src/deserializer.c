@@ -26,7 +26,7 @@ deserialize_msg(const char *raw_msg_str, struct DeserializedObj *obj)
     }
 
     if (is_cmd_data(obj->msg_data)) {
-        if (sscanf(obj->msg_data, "${'%[^']':'%[^']'}", obj->svr_cmd, obj->msg_data) != 2) {
+        if (sscanf(obj->msg_data, "${%[^:]:%[^}]", obj->svr_cmd, obj->msg_data) != 2) {
             fprintf(stderr, "command data deserialization fail\n");
             return false;
         }
