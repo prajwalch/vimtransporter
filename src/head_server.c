@@ -167,7 +167,6 @@ start_event_loop(struct FdCollection *fds_coll)
             } else if (pollevents[n_fd].events & EPOLLIN) { // got a new read event, just read the data and response back to client
                 FdColl_mod_client_socketfd(fds_coll, pollevents[n_fd].data.fd);
                 printf("Event: client '%i' send some data\n", fds_coll->client_socketfd);
-                active_clients_print(fds_coll->client_socketfd, active_clients);
                 reply_client(fds_coll->client_socketfd, active_clients);
             }
         }
