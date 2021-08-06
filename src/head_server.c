@@ -19,7 +19,6 @@
 
 #define DEFAULT_PORT 2058
 #define DEFAULT_BACKLOG 10
-#define DEFAULT_MSG_ID 0
 #define MAX_EVENTS 20
 
 void die_with_error(const char *msg);
@@ -47,7 +46,7 @@ is_ping_msg(char *msg_data)
 }
 
 void
-reply_client(int socketfd)
+reply_client(int socketfd, int *active_clients)
 {
     struct DeserializedObj obj = {
         .msg_id = 0,
@@ -60,14 +59,51 @@ reply_client(int socketfd)
 
     printf("Received: msg_id: %d, data: %s, svr_cmd: %s\n", obj.msg_id, obj.msg_data, obj.svr_cmd);
 
-    // send PONG as a response, if we got PING msg
-    if (is_ping_msg(obj.msg_data)) {
-        char vim_pong[100] = {0};
-        response_normal_string(socketfd, vim_pong, obj.msg_id, "PING");
-        return;
+    char res_buf[100] = {0};
+    if (strlen(obj.svr_cmd) == 0) {
+        // send PONG as a response, if we got PING msg
+        if (is_ping_msg(obj.msg_data)) {
+            response_normal_string(socketfd, res_buf, obj.msg_id, "PING");
+            return;
+        }
+    }
+
+    int num_active_clients = active_clients[0];
+    for (int i = 1; i <= num_active_clients; ++i) {
+        if (active_clients[i] == 0 || active_clients[i] == socketfd)
+            continue;
+
+        if (strncmp(obj.svr_cmd, "redraw", 6) == 0)
+            response_redraw_cmd(active_clients[i], res_buf, "forced");
+
+        if (strncmp(obj.svr_cmd, "ex", 2) == 0)
+            response_ex_cmd(active_clients[i], res_buf, obj.msg_data);
+
+        if (strncmp(obj.svr_cmd, "normal", 6) == 0)
+            response_normal_cmd(active_clients[i], res_buf, obj.msg_data);
+
+        if (strncmp(obj.svr_cmd, "expr", 4) == 0)
+            response_expr_cmd(active_clients[i], res_buf, obj.msg_data);
+
+        if (strncmp(obj.svr_cmd, "call", 4) == 0)
+            response_call_cmd(active_clients[i], res_buf, obj.msg_data, "[]");
     }
     response_error_string(socketfd);
     return;
+}
+
+static void
+active_clients_del(int socketfd, int *bucket)
+{
+    bucket[socketfd - 4] = 0;
+}
+
+static void
+active_clients_add(int socketfd, int *bucket)
+{
+    bucket[socketfd - 4] = socketfd;
+    // keep track of num of fds are stored at index 0
+    bucket[0] += 1;
 }
 
 // set respective client socket fd who is recently active/ready for un-active/hang up
@@ -86,6 +122,8 @@ start_event_loop(struct FdCollection *fds_coll)
     pollevent.events = EPOLLIN|EPOLLET;
     epoll_ctl_add_fd(fds_coll->epollfd, fds_coll->master_socketfd, &pollevent);
 
+    int active_clients[100] = {0};
+
     while(1) {
         DBLOG("Event: loop started...");
         int num_ready_sockfds = epoll_wait(fds_coll->epollfd, pollevents, MAX_EVENTS, -1);
@@ -101,6 +139,7 @@ start_event_loop(struct FdCollection *fds_coll)
                 FdColl_mod_client_socketfd(fds_coll, pollevents[n_fd].data.fd);
                 // remove the client from monitor list
                 epoll_ctl_delete_fd(fds_coll->epollfd, fds_coll->client_socketfd, &pollevent);
+                active_clients_del(fds_coll->client_socketfd, active_clients);
                 printf("Event: client '%i' hangup or some error occured\n", fds_coll->client_socketfd);
                 continue;
             } else if (pollevents[n_fd].data.fd == fds_coll->master_socketfd) { // new client connection, just accept it
@@ -124,10 +163,12 @@ start_event_loop(struct FdCollection *fds_coll)
                  * */
                 pollevent.events = EPOLLIN|EPOLLRDHUP|EPOLLET;
                 epoll_ctl_add_fd(fds_coll->epollfd, fds_coll->client_socketfd, &pollevent);
+                active_clients_add(fds_coll->client_socketfd, active_clients);
             } else if (pollevents[n_fd].events & EPOLLIN) { // got a new read event, just read the data and response back to client
                 FdColl_mod_client_socketfd(fds_coll, pollevents[n_fd].data.fd);
                 printf("Event: client '%i' send some data\n", fds_coll->client_socketfd);
-                reply_client(fds_coll->client_socketfd);
+                active_clients_print(fds_coll->client_socketfd, active_clients);
+                reply_client(fds_coll->client_socketfd, active_clients);
             }
         }
     }
