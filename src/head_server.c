@@ -63,7 +63,7 @@ reply_client(int socketfd, int *active_clients)
     if (strlen(obj.svr_cmd) == 0) {
         // send PONG as a response, if we got PING msg
         if (is_ping_msg(obj.msg_data)) {
-            response_normal_string(socketfd, res_buf, obj.msg_id, "PING");
+            response_normal_string(socketfd, res_buf, obj.msg_id, "PONG");
             return;
         }
     }
