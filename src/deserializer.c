@@ -10,9 +10,9 @@
 #include <string.h>
 
 static bool
-is_cmd_data(const char *msg_data)
+is_cmd_data(char first_byte)
 {
-    if (msg_data[0] != '$')
+    if (first_byte != '$')
         return false;
     return true;
 }
@@ -25,9 +25,9 @@ deserialize_msg(const char *raw_msg_str, struct DeserializedObj *obj)
         return false;
     }
 
-    if (is_cmd_data(obj->msg_data)) {
-        if (sscanf(obj->msg_data, "${%[^:]:%[^}]", obj->svr_cmd, obj->msg_data) != 2) {
-            fprintf(stderr, "command data deserialization fail\n");
+    if (is_cmd_data(obj->msg_data[0])) {
+        if (sscanf(obj->msg_data, "$%[^:]:%[^$]$", obj->svr_cmd, obj->msg_data) != 2) {
+            fprintf(stderr, "command msg deserialization fail\n");
             return false;
         }
     }
